@@ -1,17 +1,18 @@
 # Based on audio_to_midi_melodia github repo by Justin Salamon <justin.salamon@nyu.edu>
 
 import librosa
-import vamp
 import argparse
 import os
 import numpy as np
-from midiutil.MidiFile3 import MIDIFile
+#from midiutil.MidiFile3 import MIDIFile
 from scipy.signal import medfilt
-import jams
+#import jams
 import __init__
 import pyaudio
 import sys
 import aubio
+from songmatch import SongMatch
+from operator import itemgetter
 
 '''
 Extract the melody from an audio file and convert it to MIDI.
@@ -108,7 +109,7 @@ def midi_to_notes(midi, fs, hop, smooth, minduration):
                 else:
                     pitches[-1].append(pitch)
                     
-    print(pitches)
+    #print(pitches)
     
     
     
@@ -117,7 +118,7 @@ def midi_to_notes(midi, fs, hop, smooth, minduration):
         if len(p) > 5:
             pitch_means.append(np.mean(p))
             
-    print(pitch_means)
+    #print(pitch_means)
     
 #    if len(pitch_means) > 1:
 #            
@@ -190,8 +191,8 @@ def audio_to_midi_melodia(data, outfile, bpm, smooth=0.25, minduration=0.1,
 
     print("Conversion complete.")
 
-infile = "/home/damichoi/EngSci/Capstone/sample_dami_ds.wav"
-outfile= "/home/damichoi/EngSci/Capstone/sample_dami_out.mid"
+#infile = "/home/damichoi/EngSci/Capstone/sample_dami_ds.wav"
+#outfile= "/home/damichoi/EngSci/Capstone/sample_dami_out.mid"
 bpm = 60
 smooth = 0.5
 minduration = 0.001
@@ -201,9 +202,9 @@ hop = 128
 
 # load audio using librosa
 print("Loading audio...")
-data, sr = librosa.load(infile, sr=fs, mono=True)
+#data, sr = librosa.load(infile, sr=fs, mono=True)
 
-print(data.shape)
+#print(data.shape)
 
 #audio_to_midi_melodia(data, outfile, bpm, smooth=smooth, minduration=minduration, savejams=jams)
 
@@ -224,7 +225,7 @@ stream = p.open(format=pyaudio_format,
                 frames_per_buffer=buffer_size)
 
 # setup pitch
-tolerance = 0.8
+tolerance = 0.2
 win_s = 4096 # fft size
 hop_s = buffer_size # hop size
 pitch_o = aubio.pitch("default", win_s, hop_s, samplerate)
@@ -243,7 +244,7 @@ while True:
         confidence = pitch_o.get_confidence()
         pitches.append(pitch)
 
-        print("{} / {}".format(pitch,confidence))
+        #print("{} / {}".format(pitch,confidence))
 
     except KeyboardInterrupt:
         print("*** Ctrl+C pressed, exiting")
@@ -255,8 +256,25 @@ stream.close()
 p.terminate()
 
 pitches = midi_to_notes(pitches, fs, hop, smooth, minduration)
-print(pitches)
+#print(pitches)
 seq = get_seq(pitches)
-print(seq)
-    
-    
+
+#print(seq)
+
+
+songs = {'Twinkle Twinkle Little Star':'SUSUSDDSDSDSSSDUSDSDSDUSDSDSDDSUSUSDDSDSDSD',
+         'Three Blind Mice':'DDUDDUDSDUDSDUUSDDUUDSSUSSDDUUDSSUSSDDUUDSSDDDDUDDUDDUDSDUDSDUUSDDUUDSSUSSDDUUDSSUSSDDUUDSSDDDD',
+         'london Bridge is Falling Down':'UDDDUUDUUDUUSUDDDUUDUDDUUDDDUUDUUDUUSUDDDUUDUDD',
+         'Lullaby':'SUDSUDUUDDSDDUUDUUDUUDDUUDSUDDUDDUUUDDSUDDUDDUDDSD',
+         'Mary has a little lamb':'DDUUSSDSSUSSDDDUUSSDSUDDUDDUUSSDSSUSSDDDUUSSDSUDD'}
+
+target = "".join(seq[1:])
+
+scores = []
+for song in songs:
+    song_matcher = SongMatch(songs[song])
+    score = song_matcher.addNotes(target)
+    scores.append([song,score])
+print("+++++++++++++++++++++++++++++++")
+print(sorted(scores, key=itemgetter(1))[0][0])
+print("+++++++++++++++++++++++++++++++")
