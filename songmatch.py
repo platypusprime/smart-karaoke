@@ -39,7 +39,6 @@ def LevenshteinDistance(s,t):
     d = LevenshteinMatrix(s,t)
     return d[len(s),len(t)]
 
-
 def getMatchMatrix(s,t):
     '''
     (list,list) -> matrix or (str, str) -> matrix
@@ -72,16 +71,17 @@ def getMatchVal(s,t):
             minval = d[i,colind]
     return minval
 
-
 class SongMatchNew:
-    def __init__(self, songname = '', s=[]):
+    def __init__(self, songname = '', s=[], stime=[]):
         self.s = s # song DB
+        self.stime = stime
         self.t = [] # matching word
         self.d = []
         self.songname = songname
         self.alpha = 0 # transpose fix cost
         self.beta = 1 # duplicate fix cost
         self.gamma = 1 # dropout fix cost
+        self.diffmat = []
         self._counter = 0
         self._activeColumn = 0
         self._inactiveColumn = 1
@@ -131,7 +131,7 @@ class SongMatchNew:
             self.d[i][self._activeColumn] = min(duplicationCost, dropoutCost, transpositionCost)
         if DEBUG:
             print(self.d) # print out the columns
-        return self.getMatchVal()
+        return self.getMatchVal(True)
 
     def addNotes(self,notes):
         # return the match value for the last note
@@ -141,18 +141,52 @@ class SongMatchNew:
             val = self.addNote([i])
         return val
 
-    def getMatchVal(self):
+    def getMatchVal(self, update = False):
         nrow = len(self.s) + 1
-        minval = self._counter + 1
+        minval = 10000
         index = 0
         for i in range(1, nrow):
-            if (self.d[i,self._activeColumn] < minval):
+            if (self.d[i,self._activeColumn] <= minval):
                 index = i
                 minval = self.d[i,self._activeColumn]
+        if update:
+            # partial order matching
+            self.diffmat.append([index,self._counter])
         return minval
 
     def getCountVal(self):
         return self._counter
+
+    def getKeyTempo(self, sfkey, tfkey, ttime):
+        skeyl = [sfkey]
+        tkeyl = [tfkey]
+        # reconstruct full key list
+        assert(len(ttime) == self._counter + 1),"SongMatchNew:getKeyTempo timelist and counter mismatch"
+        assert(len(self.diffmat) == self._counter), "SongMatchNew:getKeyTempo length of diffmat is wrong"
+        n = len(self.diffmat)
+        for i in range(0,n):
+            skeyl.append(skeyl[i] + self.s[i])
+            tkeyl.append(tkeyl[i] + self.t[i])
+        # self.stime, ttime : tempo list
+        # skeyl, tkeyl : key list
+        if DEBUG:
+            print("skeyl and tkeyl vals:")
+            print(skeyl)
+            print(tkeyl)
+
+        # key average algorithm:
+        keydifftotal = sfkey - tfkey
+        for i in self.diffmat:
+            keydifftotal += skeyl[i[0]] - tkeyl[i[1]]
+        keydiff = keydifftotal/(n+1)
+
+        # tempo crude average algorithm:
+        temporatio = (ttime[self.diffmat[-1][1]] - ttime[0])/(self.stime[self.diffmat[-1][0]] - self.stime[0])
+
+        # where to play
+        startpt = self.stime[self.diffmat[-1][0]]
+        return [keydiff, temporatio, startpt]
+
 
 class SongMatch:
     def __init__(self, songname = '', s=''):
@@ -278,7 +312,7 @@ class SongsMatch:
         return self.probDic
 
 class SongsMatchNew:
-    def __init__(self, dic):
+    def __init__(self, dic, timedic={}):
         self.songMatchDic = {}
         self.probDic = {}
         self.newprobDic = {}
@@ -289,7 +323,10 @@ class SongsMatchNew:
         initprob = 1.0/(len(dic)+1)
         for i in dic:
             # i is the name, dic[i] is s
-            self.songMatchDic[i] = SongMatchNew(i,dic[i])
+            if i not in timedic:
+                self.songMatchDic[i] = SongMatchNew(i,dic[i])
+            else:
+                self.songMatchDic[i] = SongMatchNew(i,dic[i],timedic[i])
             self.probDic[i] = initprob
         self.probDic[self._SONGNOTINDBSTR] = initprob
         return
@@ -325,6 +362,12 @@ class SongsMatchNew:
         '''
         return self.probDic
 
+    def getKeyTempo(self, songname, sfkey, tfkey, ttime):
+        assert(songname in self.songMatchDic), "SONGSMATCHNEW, getKeyTempo invalid song name"
+        return self.songMatchDic[songname].getKeyTempo(sfkey, tfkey, ttime)
+
+
+
 
 if __name__ == "__main__":
     out1 = LevenshteinDistance('sitting','kitten')
@@ -333,6 +376,15 @@ if __name__ == "__main__":
     # test1 = SongsMatch({'test1':'sitting'})
     # print(test1.addNotes('kitten'))
     # print(test1.getProbDic())
+    DEBUG = 0
+    print("------test1------")
     test1 = SongsMatchNew({'test1':[1,2,3]})
     print(test1.addNotes([1,1,3]))
     print(test1.getProbDic())
+    print(test1.songMatchDic['test1'].diffmat)
+    print("------test2------")
+    test2 = SongsMatchNew({'test2':[1,1,1]},{'test2':[0,1,2,3]})
+    print(test2.addNotes([0,0,0]))
+    print(test2.getProbDic())
+    print(test2.songMatchDic['test2'].diffmat)
+    print(test2.getKeyTempo('test2',12,12,[1,2,5,7]))
