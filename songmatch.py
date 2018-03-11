@@ -181,7 +181,8 @@ class SongMatchNew:
         keydiff = keydifftotal/(n+1)
 
         # tempo crude average algorithm:
-        temporatio = (ttime[self.diffmat[-1][1]] - ttime[0])/(self.stime[self.diffmat[-1][0]] - self.stime[0])
+        # temporatio = (ttime[self.diffmat[-1][1]] - ttime[0])/(self.stime[self.diffmat[-1][0]] - self.stime[0])
+        temporatio = (ttime[self.diffmat[-1][1]])/(self.stime[self.diffmat[-1][0]])
 
         # where to play
         startpt = self.stime[self.diffmat[-1][0]]
