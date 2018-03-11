@@ -56,13 +56,18 @@ start = True
 UDS = False
 start_note = None
 time_counter = 0 # time recorded so far (in seconds)
+keydiff = None
+temporatio = None
+startpt = None
 
 # song-matcher setup
 songs = {'Twinkle Twinkle Little Star':[0,7,0,2,0,-2,-2,0,-1,0,-2,0,0,0,-2,7,0,-2,0,-1,0,-2,5,0,-2,0,-1,0,-2,-2,0,7,0,2,0,-2,-2,0,-1,0,-2,0,-2],
          'Three Blind Mice':[-2,-2,4,-2,-2,7,-2,0,-1,3,-2,0,-1,3,5,0,-1,-2,2,1,-5,0,0,5,0,0,-1,-2,2,1,-5,0,0,5,0,0,-1,-2,2,1,-5,0,0,-2,-1,-2,-2,4,-2,-2,4,-2,-2,7,-2,0,-1,3,-2,0,-1,3,5,0,-1,-2,2,1,-5,0,0,5,0,0,-1,-2,2,1,-5,0,0,5,0,0,-1,-2,2,1,-5,0,0,-2,-1,-2,-2]}
+timestamps = {'Twinkle Twinkle Little Star':[0.0, 0.49991319444444443, 1.0040273401027078, 1.508141485760971, 2.0122556314192344, 2.516369777077498, 3.020483922735761, 4.0287122140522875, 4.532826359710551, 5.036940505368814, 5.541054651027078, 6.04516879668534, 6.297225869514473, 6.549282942343604, 6.801340015172736, 7.0533970880018675, 7.8641806722689065, 8.565739524976657, 9.06985367063492, 9.573967816293184, 10.078081961951447, 10.582196107609711, 11.086310253267973, 12.0945385445845, 12.598652690242764, 13.102766835901026, 13.606880981559291, 14.110995127217553, 14.615109272875818, 15.11922341853408, 16.127451709850607, 16.63156585550887, 17.135680001167135, 17.6397941468254, 18.14390829248366, 18.648022438141922, 19.152136583800186, 20.160364875116713, 20.664479020774976, 21.16859316643324, 21.672707312091504, 22.176821457749767, 22.68093560340803, 23.18504974906629, 23.995833333333337]}
+start_notes = {'Twinkle Twinkle Little Star': 50}
 wav_files = {'Twinkle Twinkle Little Star':'./musicbank/twinkle.wav',
              'Three Blind Mice': './musicbank/three_blind_mice.wav'}
-song_matcher = SongsMatchNew(songs)
+song_matcher = SongsMatchNew(songs, timestamps)
 
 # initialise pyaudio
 p = pyaudio.PyAudio()
@@ -87,6 +92,9 @@ def process_audio(in_data, frame_count, time_info, status):
     global start_note
     global time_counter
     global durations
+    global keydiff
+    global temporatio
+    global startpt
     
     time_counter += seconds_per_sample
     
@@ -132,11 +140,11 @@ def process_audio(in_data, frame_count, time_info, status):
         pp.pprint(scores)
         if max(scores.values()) > 0.8: # if confident enought about song
             song = sorted(scores.items(), key=itemgetter(1))[-1][0]
-            
+            converted_durations = convert_durations(durations)
+            keydiff, temporatio, startpt = song_matcher.getKeyTempo(song, start_notes[song], start_note, converted_durations)
             print("+++++++++++++")
             print(song)
             print("+++++++++++++")
-            # @Matt use start_note and durations to extract the pitches and durations
 #            WavPlayer(wav_files[song])
 #            return (in_data, pyaudio.paComplete)
             
