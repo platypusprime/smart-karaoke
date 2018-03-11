@@ -5,6 +5,8 @@ Created on Fri Feb 23 14:29:34 2018
 @author: Xiuyan
 """
 
+from mido import Message, MidiFile, MidiTrack, MetaMessage
+
 #SONG_PATH = "../musicbank"
 SONG_PATH = ""
 
@@ -18,6 +20,13 @@ class Song(object):
         self.wav = SONG_PATH + self.file.split('.')[0] + ".wav"
         self.melodyfile = self.file.split('.')[0] + "_stripped.mid"
         self.pitch_diff = None
+        
+        mid = MidiFile(self.melodyfile)
+        track = mid.tracks[0]
+        for msg in track:
+            if msg.type == 'note_on':
+                self.firstnote = msg.note
+                break
         
     def setFile(self, file):
         self.file = SONG_PATH + file
@@ -43,6 +52,7 @@ class Song(object):
         
     def getMelodyFile(self):
         return self.melodyfile
+    
 
 class SongDatabase(object):
     """
@@ -64,6 +74,9 @@ class SongDatabase(object):
     def getMelody(self, songname):
         
         return self.songs[songname].pitch_diff
+    
+    def getFirstNote(self, songname):
+        return self.songs[songname].firstnote
     
 if __name__ == "__main__":
     
