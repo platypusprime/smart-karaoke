@@ -15,6 +15,15 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 from wavplayer import *
 
+def convert_durations(ds):
+    durations = []
+    for i,d in enumerate(ds):
+        if i == 0:
+            durations += d
+        else:
+            durations.append(d[1])
+    return durations
+
 # pyaudio params
 buffer_size = 1024
 pyaudio_format = pyaudio.paFloat32
@@ -123,6 +132,7 @@ def process_audio(in_data, frame_count, time_info, status):
         pp.pprint(scores)
         if max(scores.values()) > 0.8: # if confident enought about song
             song = sorted(scores.items(), key=itemgetter(1))[-1][0]
+            
             print("+++++++++++++")
             print(song)
             print("+++++++++++++")

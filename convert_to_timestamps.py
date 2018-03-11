@@ -53,7 +53,7 @@ def convert_to_length(timestamps, length, reflength):
 
 if __name__ == "__main__":
     
-    name = "twinkle"
+    name = "./musicbank/twinkle"
     melodyname = name + "_stripped"
     mid = MidiFile(melodyname + ".mid")
     count = count_notes(mid)
