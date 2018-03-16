@@ -16,7 +16,7 @@ class Song(object):
     def __init__(self, name, file):
         self.name = name
         self.file = SONG_PATH + file
-        self.wav = SONG_PATH + self.file.split('.')[0] + ".wav"
+        self.wav = self.file.split('.')[0] + ".wav"
         self.melodyfile = self.file.split('.')[0] + "_stripped.mid"
         self.pitch_diff = None
         self.timestamps = None
@@ -60,7 +60,7 @@ class Song(object):
     def getMIDI(self):
         return self.file
     
-    def getWav(self):
+    def getWAV(self):
         return self.wav
 
     
@@ -91,6 +91,12 @@ class SongDatabase(object):
     def getTimestamps(self, songname):
         return self.songs[songname].timestamps
     
+    def getMIDI(self, songname):
+        return self.songs[songname].getMIDI()
+    
+    def getWAV(self, songname):
+        return self.songs[songname].getWAV()
+    
 if __name__ == "__main__":
     
     allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
@@ -98,5 +104,11 @@ if __name__ == "__main__":
     songdb = SongDatabase(allSongNames)
     songdb.preprocessMelodies()
     
+    
+    # Example use
     melody = songdb.getMelody("three_blind_mice")
     timestamps = songdb.getTimestamps("three_blind_mice")
+    firstNote = songdb.getFirstNote("three_blind_mice")
+    WAVfile = songdb.getWAV("three_blind_mice")
+    MIDIfile = songdb.getMIDI("three_blind_mice")
+    
