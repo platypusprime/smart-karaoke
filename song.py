@@ -35,9 +35,6 @@ class Song(object):
     def setFile(self, file):
         self.file = SONG_PATH + file
     
-    def fetchUDS():
-        return
-    
     def fetchMelodyPitchDiff(self):
         """
         Outputs list of intervals' semitone difference
@@ -60,15 +57,12 @@ class Song(object):
         timestamps = [float(i) for i in timestamps]
         self.timestamps = timestamps
             
-        
     def getMIDI(self):
         return self.file
     
     def getWav(self):
         return self.wav
-        
-    def getMelodyFile(self):
-        return self.melodyfile
+
     
 
 class SongDatabase(object):
@@ -99,8 +93,8 @@ class SongDatabase(object):
     
 if __name__ == "__main__":
     
-    allSongNames = ["twinkle","london_bridge","three_blind_mice"]
-    #allSongNames = ["twinkle","london_bridge","lullaby","mary_had_a_little_lamb","three_blind_mice","spider"]
+    allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby"]
+    #allSongNames = ["mary_had_a_little_lamb","spider"]
     
     songdb = SongDatabase(allSongNames)
     songdb.preprocessMelodies()
