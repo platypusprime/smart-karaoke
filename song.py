@@ -93,8 +93,7 @@ class SongDatabase(object):
     
 if __name__ == "__main__":
     
-    allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby"]
-    #allSongNames = ["mary_had_a_little_lamb","spider"]
+    allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
     
     songdb = SongDatabase(allSongNames)
     songdb.preprocessMelodies()
