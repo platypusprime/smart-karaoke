@@ -150,18 +150,16 @@ def process_audio(in_data, frame_count, time_info, status):
         # add the obtained note to song_matcher to get probability
         song_matcher.addNote([seq[-1]])
         scores = song_matcher.getProbDic()
-        pp.pprint(scores)
+        #pp.pprint(scores)
         if max(scores.values()) > 0.8: # if confident enought about song
             song = sorted(scores.items(), key=itemgetter(1))[-1][0]
             converted_durations = convert_durations(durations)
-            print("+++++++++++++++")
-            print(seq)
-            print(durations)
-            print(converted_durations)
-            print("+++++++++++++++")
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(song, start_notes[song], start_note, converted_durations)
             print("+++++++++++++")
-            print(song)
+            print("key difference: %f" %keydiff)
+            print("tempo ration: %f" %temporatio)
+            print("start point: %f" %startpt)
+            print("song: %s" %song)
             print("+++++++++++++")
 #            WavPlayer(wav_files[song])
 #            return (in_data, pyaudio.paComplete)
