@@ -88,6 +88,9 @@ class SongMatchNew:
         self._modifySongFlag = True
         self._initizalized = False
 
+    def getstime(self):
+        return self.stime
+
     def modifySong(self,s):
         assert(self._modifySongFlag), "SONGMATCH, cannot modify song DB！"
         self.s = s
@@ -165,15 +168,16 @@ class SongMatchNew:
         assert(len(self.diffmat) == self._counter), "SongMatchNew:getKeyTempo length of diffmat is wrong"
         n = len(self.diffmat)
         for i in range(0,n):
-            skeyl.append(skeyl[i] + self.s[i])
             tkeyl.append(tkeyl[i] + self.t[i])
+        for i in range(0,len(self.s)):
+            skeyl.append(skeyl[i] + self.s[i])
         # self.stime, ttime : tempo list
         # skeyl, tkeyl : key list
         if DEBUG:
             print("skeyl and tkeyl vals:")
             print(skeyl)
             print(tkeyl)
-
+            print("DIFFMAT: " + str(self.diffmat))
         # key average algorithm:
         keydifftotal = sfkey - tfkey
         for i in self.diffmat:
@@ -187,7 +191,6 @@ class SongMatchNew:
         # where to play
         startpt = self.stime[self.diffmat[-1][0]]
         return [keydiff, temporatio, startpt]
-
 
 class SongMatch:
     def __init__(self, songname = '', s=''):
@@ -269,7 +272,7 @@ class SongsMatch:
         self.songMatchDic = {}
         self.probDic = {}
         self.newprobDic = {}
-        self.avgWeight = 0.5
+        self.avgWeight = 0.3
         self.notDBCost = 1
         self._counter = 0
         self._SONGNOTINDBSTR = 'Others'
