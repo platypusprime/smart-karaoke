@@ -60,7 +60,7 @@ keydiff = None
 temporatio = None
 startpt = None
 detected = False
-matchedsong = ""
+matched_song = ""
 
 # song database
 allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
@@ -107,7 +107,7 @@ def process_audio(in_data, frame_count, time_info, status):
     global temporatio
     global startpt
     global detected
-    global machedsong
+    global matched_song
 
     time_counter += seconds_per_sample
 
@@ -158,8 +158,8 @@ def process_audio(in_data, frame_count, time_info, status):
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
             proc = allWavs[matched_song]
             proc.navigate(startpt * samplerate)
-            #proc.pitch_shift(keydiff)
             #proc.time_stretch(temporatio)
+            #proc.pitch_shift(keydiff)
             proc.play()
             print("+++++++++++++")
             print("key difference: %f" %keydiff)
@@ -169,6 +169,7 @@ def process_audio(in_data, frame_count, time_info, status):
             print("+++++++++++++")
             detected = True
         if detected:
+            converted_durations = convert_durations(durations)
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
             proc = allWavs[matched_song]
             #proc.pitch_shift(keydiff)
