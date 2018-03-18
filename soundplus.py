@@ -2,12 +2,18 @@ import numpy as np
 from aupyom import Sound
 import phasevocoder
 
-#TODO implement initial offset
 #TODO ease in volume adjustments
 #TODO ease in playback adjustments
 
-
 class SoundPlus(Sound):
+
+    def __init__(self, y, sr, chunk_size=1024):
+        self._init_offset = 0
+        super().__init__(y, sr, chunk_size)
+
+    def _init_stretching(self):
+        super()._init_stretching()
+        self._i1, self._i2 = self._init_offset, self._init_offset
 
     def _next_chunk(self):
         # calculate adjustment factors
@@ -24,6 +30,9 @@ class SoundPlus(Sound):
 
         return chunk
 
+    def navigate(self, offset):
+        self._init_offset = offset
+
 if __name__ == '__main__':
     from aupyom import Sampler
     import sys
@@ -31,4 +40,5 @@ if __name__ == '__main__':
     sampler = Sampler()
     sound = SoundPlus.from_file(sys.argv[1])
     print("done loading sound")
+    sound.navigate(100000)
     sampler.play(sound)
