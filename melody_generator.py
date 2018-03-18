@@ -14,7 +14,8 @@ from song import *
 from operator import itemgetter
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from wavplayer import *
+#from wavplayer import *
+from scipy.io.wavfile import read
 
 def convert_durations(ds):
     start_time = ds[0][0]
@@ -25,6 +26,7 @@ def convert_durations(ds):
     return durations
 
 # pyaudio params
+wf = read('twinkle.wav')[1]
 buffer_size = 1024
 pyaudio_format = pyaudio.paFloat32
 n_channels = 1
@@ -80,8 +82,6 @@ timestamps = songdb.getAllTimestamps()
 # song matcher
 song_matcher = SongsMatchNew(songs, timestamps)
 
-
-
 # initialise pyaudio
 p = pyaudio.PyAudio()
 
@@ -108,10 +108,16 @@ def process_audio(in_data, frame_count, time_info, status):
     global keydiff
     global temporatio
     global startpt
-
+    global wf
+    
     time_counter += seconds_per_sample
-
-    signal = np.fromstring(in_data, dtype=np.float32)
+    if wf is not None:
+        signal = np.array(wf[:frame_count], dtype=np.float32)
+        if len(signal) < frame_count:
+            return (in_data, pyaudio.paComplete)
+        wf = wf[frame_count:]
+    else:
+        signal = np.fromstring(in_data, dtype=np.float32)
     pitch = pitch_o(signal)[0]
     confidence = pitch_o.get_confidence()
 
