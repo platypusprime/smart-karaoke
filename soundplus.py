@@ -6,7 +6,7 @@ import phasevocoder
 
 class SoundPlus(Sound):
 
-    def __init__(self, y, sr, chunk_size=1024):
+    def __init__(self, y, sr, chunk_size=2048):
         self._init_offset = 0
         super().__init__(y, sr, chunk_size)
 
@@ -30,7 +30,6 @@ class SoundPlus(Sound):
         chunk = super()._time_stretcher(adj_stretch_factor)
         if np.round(self.pitch_shift, 1) != 0:
             chunk = phasevocoder.speedx(chunk, shift_factor)
-
         # apply volume multiplier
         chunk *= self._volume_cur
 
@@ -46,6 +45,24 @@ class SoundPlus(Sound):
             self._volume_step += 1
 
         return chunk
+
+    @property
+    def chunks(self):
+        """ Returns a chunk iterator over the sound. """
+        if not hasattr(self, '_it'):
+            class ChunkIterator(object):
+                def __iter__(iter):
+                    return iter
+
+                def __next__(iter):
+                    chunk = self._next_chunk()
+
+                    return chunk
+                next = __next__
+
+            self._it = ChunkIterator()
+
+        return self._it
 
     def _ease_sinusoidal(self, orig, target, step, max_steps):
         adj = target - orig
