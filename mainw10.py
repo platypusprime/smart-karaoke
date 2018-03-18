@@ -150,13 +150,13 @@ def process_audio(in_data, frame_count, time_info, status):
         # add the obtained note to song_matcher to get probability
         song_matcher.addNote([seq[-1]])
         scores = song_matcher.getProbDic()
+        best_song = sorted(scores.items(), key=itemgetter(1))[-1][0]
         #pp.pprint(scores)
-        if max(scores.values()) > 0.8 and not detected: # if confident enought about song
-            song = sorted(scores.items(), key=itemgetter(1))[-1][0]
-            matchedsong = song
+        if max(scores.values()) > 0.8 and best_song != "Others" and not detected: # if confident enought about song
+            matched_song = best_song
             converted_durations = convert_durations(durations)
-            keydiff, temporatio, startpt = song_matcher.getKeyTempo(song, start_notes[song], start_note, converted_durations)
-            proc = allWavs[song]
+            keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
+            proc = allWavs[matched_song]
             proc.navigate(startpt * samplerate)
             #proc.pitch_shift(keydiff)
             #proc.time_stretch(temporatio)
@@ -165,12 +165,12 @@ def process_audio(in_data, frame_count, time_info, status):
             print("key difference: %f" %keydiff)
             print("tempo ration: %f" %temporatio)
             print("start point: %f" %startpt)
-            print("song: %s" %song)
+            print("song: %s" %matched_song)
             print("+++++++++++++")
-
+            detected = True
         if detected:
-            keydiff, temporatio, startpt = song_matcher.getKeyTempo(song, start_notes[song], start_note, converted_durations)
-            proc = allWavs[song]
+            keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
+            proc = allWavs[matched_song]
             #proc.pitch_shift(keydiff)
             #proc.time_stretch(temporatio)
 
