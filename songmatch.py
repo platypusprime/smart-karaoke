@@ -179,14 +179,14 @@ class SongMatchNew:
             print(tkeyl)
             print("DIFFMAT: " + str(self.diffmat))
         # key average algorithm:
-        keydifftotal = sfkey - tfkey
+        keydifftotal = tfkey - sfkey
         for i in self.diffmat:
-            keydifftotal += skeyl[i[0]] - tkeyl[i[1]]
+            keydifftotal += tkeyl[i[1]] - skeyl[i[0]]
         keydiff = keydifftotal/(n+1)
 
         # tempo crude average algorithm:
         # temporatio = (ttime[self.diffmat[-1][1]] - ttime[0])/(self.stime[self.diffmat[-1][0]] - self.stime[0])
-        temporatio = (ttime[self.diffmat[-1][1]])/(self.stime[self.diffmat[-1][0]])
+        temporatio = (self.stime[self.diffmat[-1][0]])/(ttime[self.diffmat[-1][1]])
 
         # where to play
         startpt = self.stime[self.diffmat[-1][0]]
@@ -321,7 +321,7 @@ class SongsMatchNew:
         self.probDic = {}
         self.newprobDic = {}
         self.avgWeight = 0.5
-        self.notDBCost = 2
+        self.notDBCost = 3
         self._counter = 0
         self._SONGNOTINDBSTR = 'Others'
         initprob = 1.0/(len(dic)+1)

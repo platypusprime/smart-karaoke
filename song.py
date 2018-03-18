@@ -97,7 +97,8 @@ class SongDatabase(object):
     def getAllFirstNode(self):
         firstnotedic = {}
         for songname in self.songs.keys():
-            firstnotedic[songname] = self.songs[songname].firstnote
+            #firstnotedic[songname] = self.songs[songname].firstnote
+            firstnotedic[songname] = 60
         return firstnotedic
 
     def getTimestamps(self, songname):
