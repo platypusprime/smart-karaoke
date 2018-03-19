@@ -16,6 +16,7 @@ from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
 from wavplayer import *
 from scipy.io.wavfile import read
+import wave
 
 def convert_durations(ds):
     start_time = ds[0][0]
@@ -25,8 +26,12 @@ def convert_durations(ds):
             durations.append(d[1]-start_time)
     return durations
 
+# if vocal input, set wf = None
+song_input = 'twinkle.wav'
+wf = read(song_input)[1]
+wf_streamout = wave.open(song_input, 'rb')
+
 # pyaudio params
-wf = read('twinkle.wav')[1]
 buffer_size = 1024
 pyaudio_format = pyaudio.paFloat32
 n_channels = 1
@@ -81,7 +86,6 @@ allWavs = {}
 for i in allSongNames:
     allWavs[i] = WavPlayer(songdb.getWAV(i))
 
-
 # initialise pyaudio
 p = pyaudio.PyAudio()
 
@@ -111,13 +115,18 @@ def process_audio(in_data, frame_count, time_info, status):
     global wf
     global detected
     global matched_song
+    global proc
+    global song_matcher
 
     time_counter += seconds_per_sample
     if wf is not None:
         signal = np.array(wf[:frame_count], dtype=np.float32)
         if len(signal) < frame_count:
+            if detected:
+                proc.stop()
             return (in_data, pyaudio.paComplete)
         wf = wf[frame_count:]
+        in_data = wf_streamout.readframes(frame_count)
     else:
         signal = np.fromstring(in_data, dtype=np.float32)
     pitch = pitch_o(signal)[0]
@@ -139,6 +148,26 @@ def process_audio(in_data, frame_count, time_info, status):
                 pitches[-1].append(pitch)
                 if not durations[-1]: # if start note
                     durations[-1] = [time_counter]
+    
+    # check if user stopped     
+    if len(durations) > 1:
+        if (time_counter - durations[-1][0]) > 3.0:
+            print("######### restarting #########")
+            # reset all data
+            pitches = [[]]
+            durations = [[]]
+            seq = []
+            start = True
+            start_note = None
+            time_counter = 0
+            song_matcher = SongsMatchNew(songs, timestamps)
+            if detected:
+                proc.stop()
+                keydiff = None
+                temporatio = None
+                startpt = None
+                detected = False
+                matched_song = ""
 
     # if note ends
     if len(pitches) > 2 :
@@ -192,12 +221,21 @@ def process_audio(in_data, frame_count, time_info, status):
     return (in_data, pyaudio.paContinue)
 
 # open stream
-stream = p.open(format=pyaudio_format,
-                channels=n_channels,
-                rate=samplerate,
-                input=True,
-                frames_per_buffer=buffer_size,
-                stream_callback=process_audio)
+if wf is None:
+    stream = p.open(format=pyaudio_format,
+                    channels=n_channels,
+                    rate=samplerate,
+                    input=True,
+                    frames_per_buffer=buffer_size,
+                    stream_callback=process_audio)
+else:
+    stream = p.open(format=p.get_format_from_width(wf_streamout.getsampwidth()),
+                    channels=wf_streamout.getnchannels(),
+                    rate=wf_streamout.getframerate(),
+                    output=True,
+                    frames_per_buffer=buffer_size,
+                    stream_callback=process_audio)
+    
 
 print("*** starting recording")
 stream.start_stream()
