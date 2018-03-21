@@ -72,6 +72,7 @@ class SoundPlus(Sound):
 
     def navigate(self, offset):
         self._init_offset = offset
+        self._reset()
 
     @property
     def volume(self):
