@@ -79,7 +79,7 @@ class SongMatchNew:
         self.d = []
         self.songname = songname
         self.alpha = 0 # transpose fix cost
-        self.beta = 1 # duplicate fix cost
+        self.beta = 5 # duplicate fix cost
         self.gamma = 1 # dropout fix cost
         self.diffmat = []
         self._counter = 0
@@ -189,10 +189,23 @@ class SongMatchNew:
 
         # tempo crude average algorithm:
         # temporatio = (ttime[self.diffmat[-1][1]] - ttime[0])/(self.stime[self.diffmat[-1][0]] - self.stime[0])
-        temporatio = (self.stime[self.diffmat[-1][0]])/(ttime[self.diffmat[-1][1]])
+        # temporatio = (self.stime[self.diffmat[-1][0]])/(ttime[self.diffmat[-1][1]])
+        temporatio = 0
+        tempolist = []
+        inserted = False
+        for i in range(1, len(self.diffmat)):
+            tempoval = (self.stime[self.diffmat[i][0]] - self.stime[self.diffmat[i-1][0]])/(ttime[self.diffmat[i][1]] - ttime[self.diffmat[i-1][1]])
+            tempolist.append(tempoval)
+        tempoval = (self.stime[self.diffmat[-1][0]-self.diffmat[0][0] + 1])/(ttime[self.diffmat[-1][1]])
+        tempolist.append(tempoval)
+        tempolist.append(tempoval)
+        tempolist.sort()
+        k = len(tempolist)//2
+        # unscented trasform
+        temporatio = 0.2 * tempolist[k-1] + 0.6 * tempolist[k] + 0.2 * tempolist[k+1]
 
         # where to play
-        startpt = self.stime[self.diffmat[-1][0]+1]
+        startpt = self.stime[self.diffmat[-1][0]]
         return [keydiff, temporatio, startpt]
 
 class SongMatch:
