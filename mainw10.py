@@ -28,7 +28,7 @@ def convert_durations(ds):
 
 # if vocal input, set wf = None
 song_input = 'twinkle.wav'
-wf = read(song_input)[1]
+wf = None#read(song_input)[1]
 wf_streamout = wave.open(song_input, 'rb')
 
 # pyaudio params
@@ -201,7 +201,7 @@ def process_audio(in_data, frame_count, time_info, status):
             proc.play()
             print("+++++++++++++")
             print("key difference: %f" %keydiff)
-            print("tempo ration: %f" %temporatio)
+            print("tempo ratio: %f" %temporatio)
             print("start point: %f" %startpt)
             print("song: %s" %matched_song)
             print("+++++++++++++")

@@ -173,11 +173,14 @@ class SongMatchNew:
             skeyl.append(skeyl[i] + self.s[i])
         # self.stime, ttime : tempo list
         # skeyl, tkeyl : key list
-        if DEBUG:
+        if 1:
             print("skeyl and tkeyl vals:")
             print(skeyl)
             print(tkeyl)
             print("DIFFMAT: " + str(self.diffmat))
+            print("stime and ttime:")
+            print(self.stime)
+            print(ttime)
         # key average algorithm:
         keydifftotal = tfkey - sfkey
         for i in self.diffmat:
@@ -189,7 +192,7 @@ class SongMatchNew:
         temporatio = (self.stime[self.diffmat[-1][0]])/(ttime[self.diffmat[-1][1]])
 
         # where to play
-        startpt = self.stime[self.diffmat[-1][0]]
+        startpt = self.stime[self.diffmat[-1][0]+1]
         return [keydiff, temporatio, startpt]
 
 class SongMatch:
