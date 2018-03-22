@@ -28,7 +28,7 @@ def convert_durations(ds):
 
 # if vocal input, set wf = None
 song_input = 'twinkle_longer.wav'
-wf = read(song_input)[1]
+wf = None#read(song_input)[1]
 wf_streamout = wave.open(song_input, 'rb')
 
 # pyaudio params
@@ -86,6 +86,8 @@ proc = WavPlayer("toms_diner.wav")
 allWavs = {}
 for i in allSongNames:
     allWavs[i] = WavPlayer(songdb.getWAV(i))
+    
+input("Press Enter to continue...")
 
 # initialise pyaudio
 p = pyaudio.PyAudio()
