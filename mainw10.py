@@ -27,8 +27,8 @@ def convert_durations(ds):
     return durations
 
 # if vocal input, set wf = None
-song_input = 'twinkle.wav'
-wf = None#read(song_input)[1]
+song_input = 'twinkle_longer.wav'
+wf = read(song_input)[1]
 wf_streamout = wave.open(song_input, 'rb')
 
 # pyaudio params
