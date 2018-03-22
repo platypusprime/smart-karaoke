@@ -36,6 +36,7 @@ buffer_size = 1024
 pyaudio_format = pyaudio.paFloat32
 n_channels = 1
 samplerate = 44100
+playrate = 24000
 seconds_per_sample = buffer_size / samplerate
 
 # setup aubio
@@ -148,8 +149,8 @@ def process_audio(in_data, frame_count, time_info, status):
                 pitches[-1].append(pitch)
                 if not durations[-1]: # if start note
                     durations[-1] = [time_counter]
-    
-    # check if user stopped     
+
+    # check if user stopped
     if len(durations) > 1:
         if (time_counter - durations[-1][0]) > 3.0:
             print("######### restarting #########")
@@ -194,10 +195,10 @@ def process_audio(in_data, frame_count, time_info, status):
             converted_durations = convert_durations(durations)
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
             proc = allWavs[matched_song]
-            print(round(startpt*samplerate))
-            proc.navigate(round(startpt*samplerate))
-            proc.time_stretch = temporatio / (2**(keydiff/4/12))
-            proc.pitch_shift = keydiff/4
+            print(round(startpt*playrate))
+            proc.navigate(round(startpt*playrate))
+            proc.time_stretch = temporatio #/ (2**(keydiff/4/12))
+            #proc.pitch_shift = keydiff/4
             proc.play()
             print("+++++++++++++")
             print("key difference: %f" %keydiff)
@@ -235,7 +236,7 @@ else:
                     output=True,
                     frames_per_buffer=buffer_size,
                     stream_callback=process_audio)
-    
+
 
 print("*** starting recording")
 stream.start_stream()
