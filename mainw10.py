@@ -36,7 +36,7 @@ buffer_size = 1024
 pyaudio_format = pyaudio.paFloat32
 n_channels = 1
 samplerate = 44100
-playrate = 24000
+playrate = 44100
 seconds_per_sample = buffer_size / samplerate
 
 # setup aubio
