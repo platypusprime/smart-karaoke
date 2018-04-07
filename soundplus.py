@@ -1,5 +1,5 @@
 import numpy as np
-from aupyom import Sound
+from scipysound import Sound
 import phasevocoder
 
 #TODO ease in playback adjustments
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     from aupyom import Sampler
     import sys
 
-    sampler = Sampler()
+    sampler = Sampler(sr=44100)
     sound = SoundPlus.from_file(sys.argv[1])
     print("done loading sound")
     sound.navigate(100000)
