@@ -50,7 +50,6 @@ class Sound(object):
         # convert binary chunks to short
         a = struct.unpack("%ih" % (w.getnframes()* w.getnchannels()), astr)
         a = [float(val) / pow(2, 15) for val in a]
-        print("asdfasdfasdf %d" % fr)
         return cls(numpy.array(a), fr)
 
     # Chunk iterator

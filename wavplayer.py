@@ -29,7 +29,7 @@ class WavPlayer(object):
             0 will result in playback from the beginning of the file.
         '''
 
-        self.sampler = Sampler()
+        self.sampler = Sampler(sr=44100)
         self.sound = SoundPlus.from_file(file)
 
     def navigate(self, offset):
