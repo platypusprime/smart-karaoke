@@ -173,7 +173,7 @@ class SongMatchNew:
             skeyl.append(skeyl[i] + self.s[i])
         # self.stime, ttime : tempo list
         # skeyl, tkeyl : key list
-        if 1:
+        if DEBUG:
             print("skeyl and tkeyl vals:")
             print(skeyl)
             print(tkeyl)

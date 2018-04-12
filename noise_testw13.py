@@ -26,10 +26,6 @@ def convert_durations(ds):
             durations.append(d[1]-start_time)
     return durations
 
-# if vocal input, set wf = None
-song_input = '../test_recording/mary_xiuyan_quiet.wav'
-wf = read(song_input)[1]
-wf_streamout = wave.open(song_input, 'rb')
 
 # pyaudio params
 buffer_size = 1024
@@ -68,7 +64,6 @@ time_counter = 0 # time recorded so far (in seconds)
 keydiff = None
 temporatio = None
 startpt = None
-detected = False
 matched_song = ""
 
 # song database
@@ -82,17 +77,6 @@ timestamps = songdb.getAllTimestamps()
 # song matcher
 song_matcher = SongsMatchNew(songs, timestamps)
 
-# load all songs
-proc = WavPlayer("toms_diner.wav")
-allWavs = {}
-for i in allSongNames:
-    allWavs[i] = WavPlayer(songdb.getWAV(i))
-    
-input("Press Enter to continue...")
-
-# initialise pyaudio
-p = pyaudio.PyAudio()
-
 def append_new(l, n, d, tc, note_min_len=5):
     if len(l[-1]) <= note_min_len:
         l.pop()
@@ -104,9 +88,34 @@ def append_new(l, n, d, tc, note_min_len=5):
     d.append([tc])
     return l, d
 
+def reset():
+    global pitches
+    global durations
+    global seq
+    global start
+    global start_note
+    global time_counter
+    global song_matcher
+    global keydiff
+    global temporatio
+    global startpt
+    global matched_song
+    
+    pitches = [[]]
+    durations = [[]]
+    seq = []
+    start = True
+    start_note = None
+    time_counter = 0
+    song_matcher = SongsMatchNew(songs, timestamps)
+    if detected:
+        keydiff = None
+        temporatio = None
+        startpt = None
+        matched_song = ""
 
-def process_audio(in_data, frame_count, time_info, status):
-    ''' callback function for pyaudio'''
+
+def process_audio(signal):
     global start
     global pitches
     global seq
@@ -117,23 +126,13 @@ def process_audio(in_data, frame_count, time_info, status):
     global temporatio
     global startpt
     global wf
-    global detected
     global matched_song
     global proc
     global song_matcher
     global recorded_output
 
     time_counter += seconds_per_sample
-    if wf is not None:
-        signal = np.array(wf[:frame_count], dtype=np.float32)
-        if len(signal) < frame_count:
-            if detected:
-                proc.stop()
-            return (in_data, pyaudio.paComplete)
-        wf = wf[frame_count:]
-        in_data = wf_streamout.readframes(frame_count)
-    else:
-        signal = np.frombuffer(in_data, dtype=np.float32)
+    
     pitch = pitch_o(signal)[0]
     confidence = pitch_o.get_confidence()
 
@@ -153,26 +152,6 @@ def process_audio(in_data, frame_count, time_info, status):
                 pitches[-1].append(pitch)
                 if not durations[-1]: # if start note
                     durations[-1] = [time_counter]
-
-    # check if user stopped
-    if len(durations) > 1:
-        if (time_counter - durations[-1][0]) > 3.0:
-            print("######### restarting #########")
-            # reset all data
-            pitches = [[]]
-            durations = [[]]
-            seq = []
-            start = True
-            start_note = None
-            time_counter = 0
-            song_matcher = SongsMatchNew(songs, timestamps)
-            if detected:
-                proc.stop()
-                keydiff = None
-                temporatio = None
-                startpt = None
-                detected = False
-                matched_song = ""
 
     # if note ends
     if len(pitches) > 2 :
@@ -194,75 +173,95 @@ def process_audio(in_data, frame_count, time_info, status):
         scores = song_matcher.getProbDic()
         best_song = sorted(scores.items(), key=itemgetter(1))[-1][0]
         #pp.pprint(scores)
-        if max(scores.values()) > 0.8 and best_song != "Others" and not detected: # if confident enought about song
+        if max(scores.values()) > 0.8 and best_song != "Others": # if confident enought about song
             matched_song = best_song
             converted_durations = convert_durations(durations)
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
-            proc = allWavs[matched_song]
-            print(round(startpt*playrate))
-            proc.navigate(round(startpt*playrate))
-            proc.time_stretch = temporatio #/ (2**(keydiff/4/12))
-            #proc.pitch_shift = keydiff/4
-            proc.play()
-            print("+++++++++++++")
-            print("key difference: %f" %keydiff)
-            print("tempo ratio: %f" %temporatio)
-            print("start point: %f" %startpt)
-            print("song: %s" %matched_song)
-            print("+++++++++++++")
-            detected = True
-        if detected:
-            converted_durations = convert_durations(durations)
-            keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
-            proc = allWavs[matched_song]
-            #proc.time_stretch = temporatio * (2**(keydiff/4/12))
-            #proc.pitch_shift = keydiff/4
-
-#            WavPlayer(wav_files[song])
-#            return (in_data, pyaudio.paComplete)
-
-    g(signal, len(signal))
-    return (in_data, pyaudio.paContinue)
-
-# open stream
-if wf is None:
-    stream = p.open(format=pyaudio_format,
-                    channels=n_channels,
-                    rate=samplerate,
-                    input=True,
-                    frames_per_buffer=buffer_size,
-                    stream_callback=process_audio)
-else:
-    stream = p.open(format=p.get_format_from_width(wf_streamout.getsampwidth()),
-                    channels=wf_streamout.getnchannels(),
-                    rate=wf_streamout.getframerate(),
-                    output=True,
-                    frames_per_buffer=buffer_size,
-                    stream_callback=process_audio)
+#            print("+++++++++++++")
+#            print("key difference: %f" %keydiff)
+#            print("tempo ratio: %f" %temporatio)
+#            print("start point: %f" %startpt)
+#            print("song: %s" %matched_song)
+#            print("+++++++++++++")
+            return True
+    return False
 
 
-print("*** starting recording")
-stream.start_stream()
-while stream.is_active():
-    try:
-        time.sleep(0.1)
-    except KeyboardInterrupt:
-        print("*** Ctrl+C pressed, exiting")
-        break
+recordings_dir = "../test_recording/"
+song_names = ["twinkle", "london", "mice", "row", "lullaby", "mary"]
+names = ["dami", "matt", "joel", "xiuyan"]
+corresp_songs = {"twinkle": "twinkle", "london": "london_bridge", "mice": "three_blind_mice", "row": "boat", "lullaby": "lullaby", "mary": "mary_had_a_little_lamb"}
+scores = {}
 
-print("*** done recording")
-stream.stop_stream()
-stream.close()
-p.terminate()
+np.random.seed(0)
 
-print(start_note)
-print(durations)
-print(seq)
-print(keydiff, temporatio, startpt)
+for i in range(6): # intensity of noise
+    noise_input1 = recordings_dir + "noise_cr.wav"
+    noise1_wf = read(noise_input1)[1]
+    
+    noise_input2 = recordings_dir + "noise_close_cr.wav"
+    noise2_wf = read(noise_input2)[1]
+    
+    noise_wfs = [noise1_wf, noise2_wf]
+    for j in range(2): # 2 types of noise
+        # first element: 1/0 for accuracy; second element: # of notes for accuracy
+        scores_key = "%d-%s"%(i,"ambient" if j == 0 else "close")
+        scores[scores_key] = [[],[]]
+        
+        for k in range(10): # phase-shift of noise
+            # prep the noise with random phase shift and intensity 
+            noise_wf = noise_wfs[j]
+            idx = np.random.randint(len(noise_wf))
+            noise = np.hstack((noise_wf[idx:], noise_wf[:idx]))
+            for x in range(1): # make noise long enough
+                np.append(noise, np.hstack((noise_wf[idx:], noise_wf[:idx])))
+            noise *= i
+                    
+            for l in range(6): # 6 songs in total
+                if l < 3: 
+                    singer = names[:2]
+                else:
+                    singer = names[2:]
+                curr_song = song_names[l]
+                name1 = "%s_%s_quiet.wav" %(curr_song,singer[0])
+                name2 = "%s_%s_quiet.wav" %(curr_song,singer[1])
+                fnames = [name1, name2]
+                
+                for m in range(2): # 2 singers each #                    
+                    print(fnames[m])
+                    vocal_input = recordings_dir + fnames[m]
+                    vocal_wf = read(vocal_input)[1]
+                    detected = False
+                    
+                    noise_wf = noise
+                    
+                    while len(vocal_wf) >= buffer_size and not detected:
+                        signal = np.array(vocal_wf[:buffer_size]+noise_wf[:buffer_size], dtype=np.float32)
+                        vocal_wf = vocal_wf[buffer_size:]
+                        noise_wf = noise_wf[buffer_size:]
+                        detected = process_audio(signal)
+                    
+                    song_title = corresp_songs[curr_song]
+                    if detected and matched_song == song_title:
+                        print("++++++++++++++ matched! ++++++++++++")
+                        scores[scores_key][0].append(1)
+                        num_notes = songdb.getNumNotesBefore(song_title, startpt)
+                        scores[scores_key][1].append(num_notes)
+                    else:
+                        scores[scores_key][0].append(0)
+                    
+                    reset()
+                    
+#print(scores) 
+for score in scores:
+    scores[score][0] = np.mean(scores[score][0])
+    scores[score][1] = np.mean(scores[score][1])
+print(scores)    
+                        
+                        
+                        
 
-song_matcher = SongsMatchNew(songs)
-song_matcher.addNotes(seq)
-scores = song_matcher.getProbDic()
-print("+++++++++++++++++++++++++++++++")
-print(sorted(scores.items(), key=itemgetter(1))[-1][0])
-print("+++++++++++++++++++++++++++++++")
+
+
+
+

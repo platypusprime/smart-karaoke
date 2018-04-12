@@ -29,8 +29,8 @@ class WavPlayer(object):
             0 will result in playback from the beginning of the file.
         '''
 
-        self.sampler = Sampler(sr=44100)
         self.sound = SoundPlus.from_file(file)
+        self.sampler = Sampler(sr=44100)
 
     def navigate(self, offset):
         self.sound.navigate(offset)
@@ -67,7 +67,7 @@ class WavPlayer(object):
 
 if __name__ == '__main__':
     # example usage
-    proc = WavPlayer("toms_diner.wav")
+    proc = WavPlayer("musicbank/twinkle.wav.BAK")
     proc.play()
 #    proc = WavPlayer("toms_diner.wav", stretch=1.5)
 #    proc = WavPlayer("toms_diner.wav", shift=2)

@@ -110,6 +110,19 @@ class SongDatabase(object):
             timestampsdic[songname] = self.songs[songname].timestamps
         return timestampsdic
 
+    def getNumNotesBefore(self, songname, timestamp):
+        timestamps = self.songs[songname].timestamps
+        if timestamp >= timestamps[-1]:
+            return len(timestamps)
+        i = 0
+        t = 0
+        numnotes = 0
+        while t <= timestamp:
+            numnotes += 1
+            i += 1
+            t = timestamps[i]
+        return numnotes
+
     def getMIDI(self, songname):
         return self.songs[songname].getMIDI()
 
