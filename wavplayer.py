@@ -5,7 +5,7 @@ load wav files.
 '''
 
 from soundplus import SoundPlus
-from aupyom import Sampler
+from samplercpy import Sampler
 
 class WavPlayer(object):
 
