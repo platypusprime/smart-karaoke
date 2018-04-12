@@ -14,7 +14,7 @@ from song import *
 from operator import itemgetter
 from pprint import PrettyPrinter
 pp = PrettyPrinter(indent=4)
-from wavplayer import *
+from wavplayer import WavPlayer
 from scipy.io.wavfile import read
 import wave
 
@@ -83,10 +83,10 @@ timestamps = songdb.getAllTimestamps()
 song_matcher = SongsMatchNew(songs, timestamps)
 
 # load all songs
-proc = WavPlayer("toms_diner.wav")
 allWavs = {}
-for i in allSongNames:
-    allWavs[i] = WavPlayer(songdb.getWAV(i))
+for song in allSongNames:
+    allWavs[song] = songdb.getWAV(song)
+player = WavPlayer(**allWavs)
     
 input("Press Enter to continue...")
 
@@ -119,7 +119,7 @@ def process_audio(in_data, frame_count, time_info, status):
     global wf
     global detected
     global matched_song
-    global proc
+    global player
     global song_matcher
     global recorded_output
 
@@ -128,7 +128,7 @@ def process_audio(in_data, frame_count, time_info, status):
         signal = np.array(wf[:frame_count], dtype=np.float32)
         if len(signal) < frame_count:
             if detected:
-                proc.stop()
+                player.stop()
             return (in_data, pyaudio.paComplete)
         wf = wf[frame_count:]
         in_data = wf_streamout.readframes(frame_count)
@@ -167,7 +167,7 @@ def process_audio(in_data, frame_count, time_info, status):
             time_counter = 0
             song_matcher = SongsMatchNew(songs, timestamps)
             if detected:
-                proc.stop()
+                player.stop()
                 keydiff = None
                 temporatio = None
                 startpt = None
@@ -198,12 +198,12 @@ def process_audio(in_data, frame_count, time_info, status):
             matched_song = best_song
             converted_durations = convert_durations(durations)
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
-            proc = allWavs[matched_song]
+            player.curr_file = matched_song
             print(round(startpt*playrate))
-            proc.navigate(round(startpt*playrate))
-            proc.time_stretch = temporatio #/ (2**(keydiff/4/12))
-            #proc.pitch_shift = keydiff/4
-            proc.play()
+            player.navigate(round(startpt*playrate))
+            player.time_stretch = temporatio #/ (2**(keydiff/4/12))
+            #player.pitch_shift = keydiff/4
+            player.play()
             print("+++++++++++++")
             print("key difference: %f" %keydiff)
             print("tempo ratio: %f" %temporatio)
@@ -214,7 +214,7 @@ def process_audio(in_data, frame_count, time_info, status):
         if detected:
             converted_durations = convert_durations(durations)
             keydiff, temporatio, startpt = song_matcher.getKeyTempo(matched_song, start_notes[matched_song], start_note, converted_durations)
-            proc = allWavs[matched_song]
+            player.curr_file = matched_song
 
     g(signal, len(signal))
     return (in_data, pyaudio.paContinue)

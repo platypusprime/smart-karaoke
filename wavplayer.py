@@ -9,15 +9,15 @@ from samplercpy import Sampler
 
 class WavPlayer(object):
 
-    def __init__(self, file, stretch=1, shift=0, offset=0):
+    def __init__(self, **files):
         '''
         Creates a player for the specified .wav file with fixed time stretch
         and pitch shift characteristics.
 
         Parameters
         ----------
-        file : string
-            The file path of the .wav file to play
+        files : string kvarargs
+            The file paths of all .wav files to load
         stretch : number, optional
             The time-stretch factor. A stretch value of 1.0 will result in a
             playback at the original speed.
@@ -29,7 +29,12 @@ class WavPlayer(object):
             0 will result in playback from the beginning of the file.
         '''
 
-        self.sound = SoundPlus.from_file(file)
+        self._curr_file = None
+        self.sounds = {}
+        for song, wav in files.items():
+            print("Loading %s from %s" % (song, wav))
+            self.sounds[song] = SoundPlus.from_file(wav)
+        self.sound = None
         self.sampler = Sampler(sr=44100)
 
     def navigate(self, offset):
@@ -65,9 +70,21 @@ class WavPlayer(object):
     def time_stretch(self, value):
         self.sound.stretch_factor = value
 
+    @property
+    def curr_file(self):
+        return self.curr_file
+
+    @curr_file.setter
+    def curr_sound(self, value):
+        self.sound_idx = value
+        self.sound = self.sounds.get(self.curr_file, None)
+        if self.sound != None:
+            self.navigate(0)
+
 if __name__ == '__main__':
     # example usage
     proc = WavPlayer("musicbank/twinkle.wav.BAK")
+    proc.sound_idx = 0
     proc.play()
 #    proc = WavPlayer("toms_diner.wav", stretch=1.5)
 #    proc = WavPlayer("toms_diner.wav", shift=2)
