@@ -72,20 +72,16 @@ class WavPlayer(object):
 
     @property
     def curr_file(self):
-        return self.curr_file
+        return self._curr_file
 
     @curr_file.setter
-    def curr_sound(self, value):
-        self.sound_idx = value
-        self.sound = self.sounds.get(self.curr_file, None)
-        if self.sound != None:
-            self.navigate(0)
+    def curr_file(self, value):
+        print("Setting song to %s" % (value))
+        self._curr_file = value
+        self.sound = self.sounds.get(self._curr_file, None)
 
 if __name__ == '__main__':
     # example usage
-    proc = WavPlayer("musicbank/twinkle.wav.BAK")
-    proc.sound_idx = 0
+    proc = WavPlayer(twinkle="musicbank/twinkle.wav")
+    proc.curr_file = "twinkle"
     proc.play()
-#    proc = WavPlayer("toms_diner.wav", stretch=1.5)
-#    proc = WavPlayer("toms_diner.wav", shift=2)
-#    proc = WavPlayer("toms_diner.wav", stretch=0.9, shift=-0.1)
