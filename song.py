@@ -5,8 +5,6 @@ Created on Fri Feb 23 14:29:34 2018
 @author: Xiuyan
 """
 
-from mido import Message, MidiFile, MidiTrack, MetaMessage
-
 SONG_PATH = "musicbank/"
 
 class Song(object):
@@ -21,12 +19,8 @@ class Song(object):
         self.pitch_diff = None
         self.timestamps = None
 
-        mid = MidiFile(self.melodyfile)
-        track = mid.tracks[0]
-        for msg in track:
-            if msg.type == 'note_on':
-                self.firstnote = msg.note
-                break
+        # manual set
+        self.firstnote = 60
 
     def preprocess(self):
         self.fetchMelodyPitchDiff()
