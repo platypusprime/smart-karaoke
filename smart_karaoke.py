@@ -72,7 +72,7 @@ detected = False
 matched_song = ""
 
 # song database
-allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
+allSongNames = ["let_it_go"]#, "twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
 songdb = SongDatabase(allSongNames)
 songdb.preprocessMelodies()
 songs = songdb.getAllMelody()
