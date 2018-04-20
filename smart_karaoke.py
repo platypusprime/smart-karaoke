@@ -29,7 +29,7 @@ def convert_durations(ds):
 # if vocal input, set wf = None
 song_input = '../test_recording/mary_xiuyan_quiet.wav'
 wf = None#read(song_input)[1]
-wf_streamout = wave.open(song_input, 'rb')
+wf_streamout = None#wave.open(song_input, 'rb')
 
 # pyaudio params
 buffer_size = 512
@@ -72,7 +72,8 @@ detected = False
 matched_song = ""
 
 # song database
-allSongNames = ["let_it_go"]#, "twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
+allSongNames = ["twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
+#allSongNames = ["let_it_go"]#, "twinkle","london_bridge","three_blind_mice","boat","lullaby","mary_had_a_little_lamb"]
 songdb = SongDatabase(allSongNames)
 songdb.preprocessMelodies()
 songs = songdb.getAllMelody()
@@ -87,7 +88,7 @@ allWavs = {}
 for song in allSongNames:
     allWavs[song] = songdb.getWAV(song)
 player = WavPlayer(**allWavs)
-    
+
 input("Press Enter to continue...")
 
 # initialise pyaudio

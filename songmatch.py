@@ -173,7 +173,7 @@ class SongMatchNew:
             skeyl.append(skeyl[i] + self.s[i])
         # self.stime, ttime : tempo list
         # skeyl, tkeyl : key list
-        if DEBUG:
+        if 1:
             print("skeyl and tkeyl vals:")
             print(skeyl)
             print(tkeyl)
@@ -196,7 +196,7 @@ class SongMatchNew:
         for i in range(1, len(self.diffmat)):
             tempoval = (self.stime[self.diffmat[i][0]] - self.stime[self.diffmat[i-1][0]])/(ttime[self.diffmat[i][1]] - ttime[self.diffmat[i-1][1]])
             tempolist.append(tempoval)
-        tempoval = (self.stime[self.diffmat[-1][0]]-self.stime[self.diffmat[0][0]])/(ttime[self.diffmat[-1][1]] - ttime[self.diffmat[0][1]])
+        tempoval = (self.stime[self.diffmat[-1][0]-self.diffmat[0][0] + 1])/(ttime[self.diffmat[-1][1]])
         tempolist.append(tempoval)
         tempolist.append(tempoval)
         tempolist.sort()
